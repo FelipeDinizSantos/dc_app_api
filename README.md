@@ -1,1 +1,1 @@
-API teste para vaga DEV
+API de teste para vaga DEV
