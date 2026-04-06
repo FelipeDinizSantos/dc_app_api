@@ -30,6 +30,6 @@ class ProdutoController extends Controller
     // Como é uma ação simples, preferi retornar direto do controller!
     public function index()
     {
-        return Produto::paginate(10);
+        return Produto::all();
     }
 }

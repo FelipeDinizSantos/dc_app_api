@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\VendaController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -36,7 +37,19 @@ Route::prefix('produtos')->group(function ()
     });
 });
 
-// Retirar do app final! (?)
+// Rotas para Venda
+Route::prefix('vendas')->group(function () 
+{
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/', [VendaController::class, 'index']);
+        Route::get('/{id}', [VendaController::class, 'show']);
+        Route::post('/', [VendaController::class, 'store']);
+        Route::put('/{id}', [VendaController::class, 'update']);
+        Route::delete('/{id}', [VendaController::class, 'destroy']);
+    });
+});
+
+// Retirar do app final (?)
 Route::prefix('dev')->group(function () 
 {
     Route::post('/usuarios', [UsuarioController::class, 'store']);

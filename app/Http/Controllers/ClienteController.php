@@ -31,6 +31,6 @@ class ClienteController extends Controller
     // Como é uma ação simples, preferi retornar direto do controller!
     public function index()
     {
-        return Cliente::paginate(10);
+        return Cliente::all();
     }
 }
