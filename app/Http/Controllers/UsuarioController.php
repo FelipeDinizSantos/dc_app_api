@@ -17,7 +17,7 @@ class UsuarioController extends Controller
             'email' => ['required', 'email', 'max:150', 'unique:usuarios,email'],
             'cpf_cnpj' => ['required', 'string', 'max:18', 'unique:usuarios,cpf_cnpj'],
             'senha' => ['required', 'string', 'min:8'],
-            'senha_confirmation' => ['required', 'same:senha'],
+            'senha_confirmacao' => ['required', 'same:senha'],
         ]);
 
         $usuario = $this->usuarioService->criar($validated);
