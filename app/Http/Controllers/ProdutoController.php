@@ -28,8 +28,17 @@ class ProdutoController extends Controller
     }
 
     // Como é uma ação simples, preferi retornar direto do controller!
-    public function index()
+    public function index(Request $request)
     {
-        return Produto::all();
+        $query = Produto::query();
+
+        if ($request->filled('nome')) {
+            $nome = $request->input('nome');
+            $query->where('nome', 'like', "%{$nome}%");
+        }
+
+        $produtos = $query->get();
+
+        return response()->json($produtos);
     }
 }

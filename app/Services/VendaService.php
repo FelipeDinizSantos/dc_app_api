@@ -2,32 +2,29 @@
 
 namespace App\Services;
 
-use App\Models\Venda;
-use App\Models\VendaItem;
 use App\Models\Pagamento;
 use App\Models\Parcela;
+use App\Models\Venda;
+use App\Models\VendaItem;
 
 class VendaService
 {
     // Listagem é feita com base em filtros que são fornecidos pelo frontend na queryString
     public function buscarTodos(array $filtros)
     {
-        $query = Venda::query();
+        $query = Venda::with(['pagamento.parcelas']);
 
-        if (!empty($filtros['cliente_id'])) {
-            $query->where('cliente_id', $filtros['cliente_id']);
+        if (! empty($filtros['cliente_id'])) {
+            $query->where('id_cliente', $filtros['cliente_id']);
+        }
+        if (! empty($filtros['data_inicial'])) {
+            $query->whereDate('data', '>=', $filtros['data_inicial']);
+        }
+        if (! empty($filtros['data_final'])) {
+            $query->whereDate('data', '<=', $filtros['data_final']);
         }
 
-        // Range de data
-        if (!empty($filtros['data_inicial'])) {
-            $query->whereDate('created_at', '>=', $filtros['data_inicial']);
-        }
-
-        if (!empty($filtros['data_final'])) {
-            $query->whereDate('created_at', '<=', $filtros['data_final']);
-        }
-
-        return $query->orderBy('created_at', 'desc')->get();
+        return $query->orderBy('data', 'desc')->get();
     }
 
     public function buscarPorId(int $id): Venda
@@ -70,10 +67,10 @@ class VendaService
             'valor' => $totalVenda,
         ]);
 
-        $totalParcelas = 0;
-        foreach ($dados['parcelas'] as $p) {
-            $totalParcelas += $p['valor'];
-        }
+        // Tive que usar o round para arredondar o valor a duas casas decimais, pois, os valores com minusculas variações estavam sendo somandos de forma distinta da do front
+        // Gerando uma inconsistencia no valor total!
+        $totalParcelas = round(array_sum(array_column($dados['parcelas'], 'valor')), 2);
+        $totalVenda = round($totalVenda, 2);
 
         if ($totalParcelas != $totalVenda) {
             throw new \Exception('Soma das parcelas diferente do total da venda!');
@@ -83,8 +80,8 @@ class VendaService
         foreach ($dados['parcelas'] as $index => $parcela) {
             $parcelas[] = [
                 'id_pagamento' => $pagamento->id,
-                'numero_da_parcela' => $index + 1,                  
-                'forma_de_pagamento' => $parcela['forma_de_pagamento'], 
+                'numero_da_parcela' => $index + 1,
+                'forma_de_pagamento' => $parcela['forma_de_pagamento'],
                 'valor' => $parcela['valor'],
                 'data_vencimento' => $parcela['data_vencimento'],
                 'data_pagamento' => $parcela['data_pagamento'] ?? null,
@@ -130,6 +127,7 @@ class VendaService
         }
 
         VendaItem::insert($items);
+
         return $venda->load('itens');
     }
 

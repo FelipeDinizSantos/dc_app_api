@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ClienteService;
 use App\Models\Cliente;
-
+use App\Services\ClienteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,8 +28,17 @@ class ClienteController extends Controller
     }
 
     // Como é uma ação simples, preferi retornar direto do controller!
-    public function index()
+    public function index(Request $request)
     {
-        return Cliente::all();
+        $query = Cliente::query();
+
+        if ($request->filled('nome')) {
+            $nome = $request->input('nome');
+            $query->where('nome', 'like', "%{$nome}%");
+        }
+
+        $clientes = $query->get();
+
+        return response()->json($clientes);
     }
 }
