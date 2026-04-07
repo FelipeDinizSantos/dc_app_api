@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
 use App\Services\VendaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,19 +36,11 @@ class VendaController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'id_usuario' => ['required', 'integer', 'exists:usuarios,id'],
-            'id_cliente' => ['required', 'integer', 'exists:clientes,id'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.id_produto' => ['required', 'integer', 'exists:produtos,id'],
-            'items.*.valor_unitario' => ['required', 'numeric', 'min:0'],
-            'items.*.qtd' => ['required', 'integer', 'min:1'],
-        ]);
-
         $venda = $this->vendaService->criar($request->only([
             'id_usuario',
             'id_cliente',
             'items',
+            'parcelas',
         ]));
 
         return response()->json([
@@ -74,11 +67,6 @@ class VendaController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
-        validator(
-            ['id' => $id],
-            ['id' => ['required', 'integer', 'exists:vendas,id']]
-        )->validate();
-
         $this->vendaService->deletar($id);
 
         return response()->json([

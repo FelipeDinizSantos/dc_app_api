@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pagamentos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_vendas')->constrained('vendas');
+            $table->foreignId('id_venda')->constrained('vendas');
             $table->enum('forma_de_pagamento', ['personalizado'])->default('personalizado');
             $table->decimal('valor', 10, 2); 
             $table->timestamps();

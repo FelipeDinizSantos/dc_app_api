@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Venda;
 use App\Models\VendaItem;
+use App\Models\Pagamento;
+use App\Models\Parcela;
 
 class VendaService
 {
-    // Listagem com base em filtros fornecidos pelo frontend
+    // Listagem é feita com base em filtros que são fornecidos pelo frontend na queryString
     public function buscarTodos(array $filtros)
     {
         $query = Venda::query();
@@ -36,22 +38,18 @@ class VendaService
     public function criar(array $dados): Venda
     {
         $totalVenda = 0;
-
-        // Percorre cada produto, calculando seu valor total (valor unitario x quantidade)!
         foreach ($dados['items'] as $item) {
             $totalVenda += $item['valor_unitario'] * $item['qtd'];
         }
 
         $venda = Venda::create([
-            'id_usuario' => $dados['id_usuario'],
+            'id_usuario' => auth('sanctum')->id(),
             'id_cliente' => $dados['id_cliente'],
             'valor_total' => $totalVenda,
             'data' => now(),
         ]);
 
         $items = [];
-
-        // Para cada item, ele gera um novo registro na tabela Venda_Items
         foreach ($dados['items'] as $item) {
             $items[] = [
                 'id_venda' => $venda->id,
@@ -66,7 +64,37 @@ class VendaService
 
         VendaItem::insert($items);
 
-        return $venda->load('itens');
+        $pagamento = Pagamento::create([
+            'id_venda' => $venda->id,
+            'forma_de_pagamento' => 'personalizado',
+            'valor' => $totalVenda,
+        ]);
+
+        $totalParcelas = 0;
+        foreach ($dados['parcelas'] as $p) {
+            $totalParcelas += $p['valor'];
+        }
+
+        if ($totalParcelas != $totalVenda) {
+            throw new \Exception('Soma das parcelas diferente do total da venda!');
+        }
+
+        $parcelas = [];
+        foreach ($dados['parcelas'] as $index => $parcela) {
+            $parcelas[] = [
+                'id_pagamento' => $pagamento->id,
+                'numero_da_parcela' => $index + 1,                  
+                'forma_de_pagamento' => $parcela['forma_de_pagamento'], 
+                'valor' => $parcela['valor'],
+                'data_vencimento' => $parcela['data_vencimento'],
+                'data_pagamento' => $parcela['data_pagamento'] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        Parcela::insert($parcelas);
+
+        return $venda->load(['itens', 'pagamento.parcelas']);
     }
 
     public function atualizar(int $id, array $dados): Venda
@@ -84,7 +112,7 @@ class VendaService
             'data' => $dados['data'],
         ]);
 
-        // Recria o conjunto de itens relacionados a venda e adiciona os novos editados, removendo os antigos.
+        // Recria o conjunto de itens relacionados a venda e adiciona os novos editados, removendo os antigos
         // Ou seja, remove tudo e recria!
         $venda->itens()->delete();
 
@@ -105,7 +133,6 @@ class VendaService
         return $venda->load('itens');
     }
 
-    // Deleta tudo relacionado a venda.
     public function deletar(int $id): void
     {
         $venda = Venda::findOrFail($id);
