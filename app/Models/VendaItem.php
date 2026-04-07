@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['id_venda', 'id_produto', 'quantidade', 'valor_unitario', 'subtotal'])]
 class VendaItem extends Model
 {
-    function casts(): array
+    use SoftDeletes;
+
+    public function casts(): array
     {
         return [
             'quantidade' => 'integer',

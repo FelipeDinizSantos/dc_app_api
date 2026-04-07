@@ -12,14 +12,16 @@ class VendaService
     // Listagem é feita com base em filtros que são fornecidos pelo frontend na queryString
     public function buscarTodos(array $filtros)
     {
-        $query = Venda::with(['pagamento.parcelas']);
+        $query = Venda::with(['pagamento.parcelas', 'cliente', 'usuario']);
 
         if (! empty($filtros['cliente_id'])) {
             $query->where('id_cliente', $filtros['cliente_id']);
         }
+
         if (! empty($filtros['data_inicial'])) {
             $query->whereDate('data', '>=', $filtros['data_inicial']);
         }
+
         if (! empty($filtros['data_final'])) {
             $query->whereDate('data', '<=', $filtros['data_final']);
         }
@@ -131,10 +133,12 @@ class VendaService
         return $venda->load('itens');
     }
 
+    // Como envolve pagamentos e cobranças esses delets são todos softDeletes.
     public function deletar(int $id): void
     {
         $venda = Venda::findOrFail($id);
         $venda->itens()->delete();
+        $venda->pagamento()->delete();
         $venda->delete();
     }
 }

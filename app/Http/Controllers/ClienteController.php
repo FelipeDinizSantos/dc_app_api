@@ -37,6 +37,12 @@ class ClienteController extends Controller
             $query->where('nome', 'like', "%{$nome}%");
         }
 
+        // Solução para evitar ter que criar um método 'show'...
+        if ($request->filled('id')) {
+            $id = $request->input('id');
+            $query->where('id', $id);
+        }
+
         $clientes = $query->get();
 
         return response()->json($clientes);
