@@ -26,14 +26,14 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Login feito com sucesso!',
-                'token'   => $result['token'],
+                'token' => $result['token'],
                 'usuario' => $result['usuario'],
             ]);
 
         } catch (ValidationException $erros) {
             return response()->json([
                 'message' => 'Credenciais inválidas. Confirme as informações e tente novamente!',
-                'erros'  => $erros->errors(),
+                'erros' => $erros->errors(),
             ], 401);
         }
     }

@@ -54,3 +54,8 @@ Route::prefix('dev')->group(function ()
 {
     Route::post('/usuarios', [UsuarioController::class, 'store']);
 });
+
+// Gambiarra para tratar redirect gerado por falha na autenticação
+Route::get('/login', fn () => response()->json([
+    'message' => 'Não autenticado.'
+], 401));
