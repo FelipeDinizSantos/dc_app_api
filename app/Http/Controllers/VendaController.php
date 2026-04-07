@@ -36,17 +36,24 @@ class VendaController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $venda = $this->vendaService->criar($request->only([
-            'id_usuario',
-            'id_cliente',
-            'items',
-            'parcelas',
-        ]));
+        try {
+            $venda = $this->vendaService->criar($request->only([
+                'id_usuario',
+                'id_cliente',
+                'items',
+                'parcelas',
+            ]));
 
-        return response()->json([
-            'mensagem' => 'Venda criada com sucesso!',
-            'venda' => $venda,
-        ], 201);
+            return response()->json([
+                'mensagem' => 'Venda criada com sucesso!',
+                'venda' => $venda,
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'mensagem' => $e->getMessage(),
+            ], 422);
+        }
     }
 
     public function update(Request $request, int $id): JsonResponse
