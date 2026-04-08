@@ -96,7 +96,7 @@ class VendaService
         return $venda->load(['itens', 'pagamento.parcelas']);
     }
 
-    // Esse método somente atualiza cliente, usuario e/ou data. Pode ser incrementando depois se houver demanda
+    // Esse método somente atualiza cliente e usuario. Pode ser incrementando depois se houver demanda
     public function atualizar(int $id, array $dados): Venda
     {
         $venda = Venda::findOrFail($id);

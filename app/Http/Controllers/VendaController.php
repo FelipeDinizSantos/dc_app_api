@@ -29,7 +29,6 @@ class VendaController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        // Já retorna automaticamente status 404 caso não encontre!
         return response()->json($this->vendaService->buscarPorId($id));
     }
 

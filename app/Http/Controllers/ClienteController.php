@@ -27,7 +27,6 @@ class ClienteController extends Controller
         ], 201);
     }
 
-    // Como é uma ação simples, preferi retornar direto do controller!
     public function index(Request $request)
     {
         $query = Cliente::query();
