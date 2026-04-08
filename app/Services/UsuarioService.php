@@ -12,7 +12,7 @@ class UsuarioService
             'nome' => $dados['nome'],
             'email' => $dados['email'],
             'cpf_cnpj' => $dados['cpf_cnpj'],
-            'senha' => $dados['senha'], 
+            'senha' => $dados['senha'],
         ]);
     }
 }

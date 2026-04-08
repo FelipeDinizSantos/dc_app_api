@@ -7,7 +7,6 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VendaController;
 use Illuminate\Support\Facades\Route;
 
-// Rotas para autenticação do Usuário
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
@@ -17,7 +16,6 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// Rotas para Cliente
 Route::prefix('clientes')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [ClienteController::class, 'index']);
@@ -25,7 +23,6 @@ Route::prefix('clientes')->group(function () {
     });
 });
 
-// Rotas para Produto
 Route::prefix('produtos')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [ProdutoController::class, 'index']);
@@ -33,7 +30,6 @@ Route::prefix('produtos')->group(function () {
     });
 });
 
-// Rotas para Venda
 Route::prefix('vendas')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [VendaController::class, 'index']);
@@ -44,9 +40,16 @@ Route::prefix('vendas')->group(function () {
     });
 });
 
+Route::prefix('usuarios')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/', [UsuarioController::class, 'index']);
+    });
+});
+
 // Retirar do app final (?)
 Route::prefix('dev')->group(function () {
     Route::post('/usuarios', [UsuarioController::class, 'store']);
+    Route::get('/usuarios', [UsuarioController::class, 'index']);
 });
 
 // Gambiarra para tratar redirect gerado por falha na autenticação no Insominia

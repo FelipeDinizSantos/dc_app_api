@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cliente;
 use App\Services\VendaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -58,17 +57,8 @@ class VendaController extends Controller
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $dados = $request->validate([
-            'id_cliente' => ['required', 'integer', 'exists:clientes,id'],
-            'data' => ['required', 'date'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.id_produto' => ['required', 'integer', 'exists:produtos,id'],
-            'items.*.valor_unitario' => ['required', 'numeric', 'min:0'],
-            'items.*.qtd' => ['required', 'integer', 'min:1'],
-        ]);
-
+        $dados = $request->all();
         $venda = $this->vendaService->atualizar($id, $dados);
-
         return response()->json($venda);
     }
 
@@ -77,7 +67,7 @@ class VendaController extends Controller
         $this->vendaService->deletar($id);
 
         return response()->json([
-            'mensagem' => 'Venda excluida com sucesso.'
+            'mensagem' => 'Venda excluida com sucesso.',
         ]);
     }
 }

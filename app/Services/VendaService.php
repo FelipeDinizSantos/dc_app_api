@@ -96,44 +96,22 @@ class VendaService
         return $venda->load(['itens', 'pagamento.parcelas']);
     }
 
+    // Esse método somente atualiza cliente, usuario e/ou data. Pode ser incrementando depois se houver demanda
     public function atualizar(int $id, array $dados): Venda
     {
         $venda = Venda::findOrFail($id);
 
-        $totalVenda = 0;
-        foreach ($dados['items'] as $item) {
-            $totalVenda += $item['valor_unitario'] * $item['qtd'];
-        }
-
         $venda->update([
             'id_cliente' => $dados['id_cliente'],
-            'valor_total' => $totalVenda,
+            'id_usuario' => $dados['id_usuario'],
             'data' => $dados['data'],
         ]);
 
-        // Recria o conjunto de itens relacionados a venda e adiciona os novos editados, removendo os antigos
-        // Ou seja, remove tudo e recria!
-        $venda->itens()->delete();
-
-        $items = [];
-        foreach ($dados['items'] as $item) {
-            $items[] = [
-                'id_venda' => $venda->id,
-                'id_produto' => $item['id_produto'],
-                'valor_unitario' => $item['valor_unitario'],
-                'qtd' => $item['qtd'],
-                'sub_total' => $item['valor_unitario'] * $item['qtd'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        VendaItem::insert($items);
-
-        return $venda->load('itens');
+        return $venda->load(['cliente', 'usuario', 'pagamento']);
     }
 
     // Como envolve pagamentos e cobranças esses delets são todos softDeletes.
+    // Verificar depois questão das parcelas orfãos...
     public function deletar(int $id): void
     {
         $venda = Venda::findOrFail($id);
