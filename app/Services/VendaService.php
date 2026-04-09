@@ -12,7 +12,12 @@ class VendaService
     // Listagem é feita com base em filtros que são fornecidos pelo frontend na queryString
     public function buscarTodos(array $filtros)
     {
-        $query = Venda::with(['pagamento.parcelas', 'cliente', 'usuario']);
+        $query = Venda::with([
+            'pagamento.parcelas',
+            'cliente',
+            'usuario',
+            'itens.produto',
+        ]);
 
         if (! empty($filtros['cliente_id'])) {
             $query->where('id_cliente', $filtros['cliente_id']);
@@ -106,8 +111,23 @@ class VendaService
             'data' => $dados['data'] ?? $venda->data,
         ]);
 
+        if (! empty($dados['itens'])) {
+            $totalVenda = 0;
+
+            foreach ($dados['itens'] as $item) {
+                $totalVenda += $item['valor_unitario'] * $item['qtd'];
+            }
+
+            $totalVenda = round($totalVenda, 2);
+
+            $venda->update([
+                'valor_total' => $totalVenda,
+            ]);
+        }
+
         if (! empty($dados['parcelas'])) {
             $pagamento = $venda->pagamento;
+
             $totalParcelas = round(array_sum(array_column($dados['parcelas'], 'valor')), 2);
             $totalVenda = round($venda->valor_total, 2);
 
@@ -135,7 +155,30 @@ class VendaService
             Parcela::insert($parcelas);
         }
 
-        return $venda->load(['cliente', 'usuario', 'pagamento.parcelas']);
+        if (! empty($dados['itens'])) {
+            $venda->itens()->delete();
+
+            $items = [];
+
+            foreach ($dados['itens'] as $item) {
+                $valorUnitario = (float) $item['valor_unitario'];
+                $qtd = (int) $item['qtd'];
+
+                $items[] = [
+                    'id_venda' => $venda->id,
+                    'id_produto' => $item['id_produto'],
+                    'valor_unitario' => $valorUnitario,
+                    'qtd' => $qtd,
+                    'sub_total' => round($valorUnitario * $qtd, 2),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            VendaItem::insert($items);
+        }
+
+        return $venda->load(['cliente', 'usuario', 'itens.produto', 'pagamento.parcelas']);
     }
 
     // Como envolve pagamentos e cobranças esses delets são todos softDeletes.
