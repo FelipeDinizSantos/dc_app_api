@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ProdutoService;
 use App\Models\Produto;
-
+use App\Services\ProdutoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,7 +15,7 @@ class ProdutoController extends Controller
     {
         $validated = $request->validate([
             'nome' => ['required', 'string', 'max:100'],
-            'valor' => ['required', 'numeric', 'min:0', 'decimal:0,2']
+            'valor' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
         ]);
 
         $produto = $this->produtoService->criar($validated);
@@ -39,5 +38,37 @@ class ProdutoController extends Controller
         $produtos = $query->get();
 
         return response()->json($produtos);
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'nome' => ['required', 'string', 'max:100'],
+            'valor' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
+        ]);
+
+        $produto = Produto::findOrFail($id);
+
+        $produto = $this->produtoService->atualizar($produto, $validated);
+
+        return response()->json([
+            'message' => 'Produto atualizado com sucesso.',
+            'produto' => $produto,
+        ]);
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->produtoService->deletar($id);
+
+            return response()->json([
+                'message' => 'Produto excluído com sucesso.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        }
     }
 }

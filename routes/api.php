@@ -20,6 +20,8 @@ Route::prefix('clientes')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [ClienteController::class, 'index']);
         Route::post('/', [ClienteController::class, 'store']);
+        Route::put('/{id}', [ClienteController::class, 'update']);
+        Route::delete('/{id}', [ClienteController::class, 'destroy']);
     });
 });
 
@@ -27,6 +29,8 @@ Route::prefix('produtos')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [ProdutoController::class, 'index']);
         Route::post('/', [ProdutoController::class, 'store']);
+        Route::put('/{id}', [ProdutoController::class, 'update']);
+        Route::delete('/{id}', [ProdutoController::class, 'destroy']);
     });
 });
 
@@ -46,13 +50,11 @@ Route::prefix('usuarios')->group(function () {
     });
 });
 
-// Retirar do app final (?)
 Route::prefix('dev')->group(function () {
     Route::post('/usuarios', [UsuarioController::class, 'store']);
     Route::get('/usuarios', [UsuarioController::class, 'index']);
 });
 
-// Gambiarra para tratar redirect gerado por falha na autenticação no Insominia
 Route::get('/login', fn () => response()->json([
     'message' => 'Não autenticado.',
 ], 401));

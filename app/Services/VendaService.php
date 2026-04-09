@@ -106,7 +106,7 @@ class VendaService
             'data' => $dados['data'] ?? $venda->data,
         ]);
 
-        if (!empty($dados['parcelas'])) {
+        if (! empty($dados['parcelas'])) {
             $pagamento = $venda->pagamento;
             $totalParcelas = round(array_sum(array_column($dados['parcelas'], 'valor')), 2);
             $totalVenda = round($venda->valor_total, 2);
@@ -136,5 +136,15 @@ class VendaService
         }
 
         return $venda->load(['cliente', 'usuario', 'pagamento.parcelas']);
+    }
+
+    // Como envolve pagamentos e cobranças esses delets são todos softDeletes.
+    // Verificar depois questão das parcelas orfãos...
+    public function deletar(int $id): void
+    {
+        $venda = Venda::findOrFail($id);
+        $venda->itens()->delete();
+        $venda->pagamento()->delete();
+        $venda->delete();
     }
 }
