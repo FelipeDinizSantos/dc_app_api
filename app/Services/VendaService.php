@@ -96,27 +96,45 @@ class VendaService
         return $venda->load(['itens', 'pagamento.parcelas']);
     }
 
-    // Esse método somente atualiza cliente e usuario. Pode ser incrementando depois se houver demanda
     public function atualizar(int $id, array $dados): Venda
     {
-        $venda = Venda::findOrFail($id);
+        $venda = Venda::with('pagamento.parcelas')->findOrFail($id);
 
         $venda->update([
-            'id_cliente' => $dados['id_cliente'],
-            'id_usuario' => $dados['id_usuario'],
-            'data' => $dados['data'],
+            'id_cliente' => $dados['id_cliente'] ?? $venda->id_cliente,
+            'id_usuario' => $dados['id_usuario'] ?? $venda->id_usuario,
+            'data' => $dados['data'] ?? $venda->data,
         ]);
 
-        return $venda->load(['cliente', 'usuario', 'pagamento']);
-    }
+        if (!empty($dados['parcelas'])) {
+            $pagamento = $venda->pagamento;
+            $totalParcelas = round(array_sum(array_column($dados['parcelas'], 'valor')), 2);
+            $totalVenda = round($venda->valor_total, 2);
 
-    // Como envolve pagamentos e cobranças esses delets são todos softDeletes.
-    // Verificar depois questão das parcelas orfãos...
-    public function deletar(int $id): void
-    {
-        $venda = Venda::findOrFail($id);
-        $venda->itens()->delete();
-        $venda->pagamento()->delete();
-        $venda->delete();
+            if ($totalParcelas != $totalVenda) {
+                throw new \Exception('Soma das parcelas diferente do total da venda!');
+            }
+
+            $pagamento->parcelas()->delete();
+
+            $parcelas = [];
+
+            foreach ($dados['parcelas'] as $index => $parcela) {
+                $parcelas[] = [
+                    'id_pagamento' => $pagamento->id,
+                    'numero_da_parcela' => $index + 1,
+                    'forma_de_pagamento' => $parcela['forma_de_pagamento'],
+                    'valor' => $parcela['valor'],
+                    'data_vencimento' => $parcela['data_vencimento'],
+                    'data_pagamento' => $parcela['data_pagamento'] ?? null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            Parcela::insert($parcelas);
+        }
+
+        return $venda->load(['cliente', 'usuario', 'pagamento.parcelas']);
     }
 }
