@@ -43,6 +43,12 @@ class VendaService
     public function criar(array $dados): Venda
     {
         return DB::transaction(function () use ($dados) {
+            $totalVenda = 0;
+            
+            foreach ($dados['items'] as $item) {
+                $totalVenda += $item['valor_unitario'] * $item['qtd'];
+            }
+
             // Tive que usar o round para arredondar o valor a duas casas decimais, pois, os valores com minusculas variações estavam sendo somandos de forma distinta da do front
             // Gerando uma inconsistencia no valor total!
             $totalParcelas = round(array_sum(array_column($dados['parcelas'], 'valor')), 2);
@@ -50,11 +56,6 @@ class VendaService
 
             if ($totalParcelas != $totalVenda) {
                 throw new \Exception('Soma das parcelas diferente do total da venda!');
-            }
-
-            $totalVenda = 0;
-            foreach ($dados['items'] as $item) {
-                $totalVenda += $item['valor_unitario'] * $item['qtd'];
             }
 
             $venda = Venda::create([
@@ -102,7 +103,6 @@ class VendaService
 
             return $venda->load(['itens', 'pagamento.parcelas']);
         });
-
     }
 
     public function atualizar(int $id, array $dados): Venda
