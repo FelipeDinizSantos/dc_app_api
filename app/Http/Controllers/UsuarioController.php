@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Usuario;
-
 use App\Services\UsuarioService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,9 +10,11 @@ class UsuarioController extends Controller
 {
     public function __construct(private readonly UsuarioService $usuarioService) {}
 
-    public function index()
+    public function index(): JsonResponse
     {
-        return Usuario::all();
+        $usuarios = $this->usuarioService->listar();
+
+        return response()->json($usuarios);
     }
 
     public function store(Request $request): JsonResponse

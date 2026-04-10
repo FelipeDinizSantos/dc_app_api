@@ -22,7 +22,7 @@ class ProdutoService
             'valor' => $dados['valor'],
         ]);
 
-        return $produto;
+        return $produto->fresh();
     }
 
     public function deletar(int $id): void

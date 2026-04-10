@@ -27,13 +27,11 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Login feito com sucesso!',
                 'token' => $result['token'],
-                'usuario' => $result['usuario'],
             ]);
 
         } catch (ValidationException $erros) {
             return response()->json([
                 'message' => 'Credenciais inválidas. Confirme as informações e tente novamente!',
-                'erros' => $erros->errors(),
             ], 401);
         }
     }
@@ -49,10 +47,6 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        $usuario = $this->authService->me($request->user());
-
-        return response()->json([
-            'usuario' => $usuario,
-        ]);
+        return response()->json(['usuario' => $request->user()]);
     }
 }

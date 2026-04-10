@@ -12,12 +12,13 @@ class AuthService
     {
         $usuario = Usuario::where('email', $email)->first();
 
-        if (!$usuario || !Hash::check($senha, $usuario->senha)) {
+        if (! $usuario || ! Hash::check($senha, $usuario->senha)) {
             throw ValidationException::withMessages([
                 'email' => ['Credenciais inválidas. Confirme as informações e tente novamente!'],
             ]);
         }
 
+        // Escolhi exigir que a sessão seja acessada somente por um dispositivo
         $usuario->tokens()->delete();
         $token = $usuario->createToken('x-token')->plainTextToken;
 
@@ -29,11 +30,6 @@ class AuthService
 
     public function logout(Usuario $usuario): void
     {
-        $usuario->currentAccessToken()->delete();
-    }
-
-    public function me(Usuario $usuario): Usuario
-    {
-        return $usuario;
+        $usuario->tokens()->delete();
     }
 }

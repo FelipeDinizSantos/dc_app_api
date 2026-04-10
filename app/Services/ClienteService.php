@@ -24,7 +24,7 @@ class ClienteService
             'cpf_cnpj' => $dados['cpf_cnpj'],
         ]);
 
-        return $cliente;
+        return $cliente->fresh();
     }
 
     public function deletar(int $id): void

@@ -7,5 +7,5 @@ Route::get('/', function () {
 });
 
 Route::get('/login', fn () => response()->json([
-    'message' => 'Não autenticado.'
+    'message' => 'Não autenticado.',
 ], 401));
